@@ -1,11 +1,41 @@
 const express = require("express");
 const app = express();
+const server = http.createServer(app);
 const cors = require("cors");
+const http = require("http");
+
+const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const userRouter = require("./routes/userRouter");
+const messageRouter = require("./routes/messageRoutes");
 require("dotenv").config();
 
 const PORT = process.env.port || 5000;
+
+//initialize socket server
+export const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+export const userSocketMap = {};
+
+io.on("connection", (socket) => {
+  const userId = socket.handshake.query.userId;
+  console.log("user connected ", userId);
+
+  if (userId) userSocketMap[userId] = socket.id;
+  // emit online users to all
+
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected!");
+    delete userSocketMap[userId];
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  });
+});
 
 connectDB();
 app.use(express.json({ limit: "4mb" }));
@@ -17,7 +47,8 @@ app.use("/api/status", (req, res) => {
 });
 
 app.use("/api/auth", userRouter);
+app.use("/api/messages", messageRouter);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });

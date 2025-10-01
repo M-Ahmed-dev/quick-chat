@@ -1,5 +1,6 @@
 const UserModel = require("../models/User");
 const cloudinary = require("../config/cloudinary");
+const generateToken = require("../utils/utils");
 
 async function registerUser(req, res) {
   const { fullName, email, password, bio } = req.body;
@@ -34,16 +35,10 @@ async function registerUser(req, res) {
 
     const userToken = generateToken(newUser._id);
 
-    res.cookie("token", userToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
     return res.status(201).json({
       status: true,
       message: "User registered successfully",
+      token: userToken,
       userDetails: {
         id: newUser._id,
         fullName: newUser.fullName,
@@ -75,16 +70,10 @@ async function login(req, res) {
 
     const userToken = generateToken(newUser._id);
 
-    res.cookie("token", userToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
     return res.status(201).json({
       status: true,
       message: "User registered successfully",
+      token: userToken,
       userDetails: {
         id: newUser._id,
         fullName: newUser.fullName,
@@ -137,4 +126,4 @@ async function updateProfile(req, res) {
   }
 }
 
-module.exports = { registerUser, login };
+module.exports = { registerUser, login, updateProfile };
