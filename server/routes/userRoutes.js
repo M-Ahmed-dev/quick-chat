@@ -2,8 +2,9 @@ const express = require("express");
 const {
   registerUser,
   updateProfile,
+  login,
 } = require("../controllers/userController");
-const { checkAuth } = require("../middleware/auth");
+const { checkAuth, protectRoute } = require("../middleware/auth");
 const userRouter = express.Router();
 
 userRouter.post("/signup", registerUser);

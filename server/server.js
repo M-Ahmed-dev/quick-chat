@@ -1,25 +1,25 @@
-const express = require("express");
-const app = express();
-const server = http.createServer(app);
-const cors = require("cors");
-const http = require("http");
-
 const { Server } = require("socket.io");
 const connectDB = require("./config/db");
-const userRouter = require("./routes/userRouter");
+
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const http = require("http");
+const userRouter = require("./routes/userRoutes");
 const messageRouter = require("./routes/messageRoutes");
+const server = http.createServer(app);
 require("dotenv").config();
 
 const PORT = process.env.port || 5000;
 
 //initialize socket server
-export const io = new Server(server, {
+const io = new Server(server, {
   cors: {
     origin: "*",
   },
 });
 
-export const userSocketMap = {};
+const userSocketMap = {};
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
@@ -52,3 +52,5 @@ app.use("/api/messages", messageRouter);
 server.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
+
+module.exports = { io, userSocketMap };

@@ -1,7 +1,13 @@
 import axios from "axios";
-import { createContext, useContext } from "react";
+import { createContext } from "react";
 
-export type AuthContextType = {
+interface AuthCredentials {
+  fullName: string;
+  email: string;
+  password: string;
+  bio: string;
+}
+export interface AuthContextType {
   axios: typeof axios;
   token: string | null;
   authUser: {
@@ -12,10 +18,10 @@ export type AuthContextType = {
   onlineUsers: any[];
   socket: WebSocket | null;
 
-  login: (state: string, credentials: any) => Promise<void>;
+  login: (state: string, credentials: AuthCredentials) => Promise<void>;
   logout: () => void;
   updateProfile: (body: any) => Promise<void>;
-};
+}
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined

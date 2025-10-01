@@ -1,10 +1,31 @@
-import UserModel from "../models/User";
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
-export const protectRoute = async (req, res, next) => {
+const protectRoute = async (req, res, next) => {
   try {
-    const token = req.headers.token;
+    let token;
+
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    } else if (req.headers.token) {
+      token = req.headers.token;
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        status: false,
+        message: "No token provided",
+      });
+    }
+
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await UserModel.findById(decoded).select("-password");
+
+    // decoded = { userId: "mongoId", iat: ..., exp: ... }
+    const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -16,16 +37,16 @@ export const protectRoute = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.log(error);
-    res.status(404).json({
+    console.error(error);
+    res.status(401).json({
       status: false,
-      message: error.message,
+      message: "Invalid or expired token",
     });
   }
 };
 
-export const checkAuth = (req, res) => {
-  res.json({
+const checkAuth = (req, res) => {
+  return res.json({
     success: true,
     user: req.user,
   });

@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { AuthContext } from "./AuthContext";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URl;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendUrl;
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {

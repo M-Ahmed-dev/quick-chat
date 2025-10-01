@@ -1,6 +1,12 @@
 const UserModel = require("../models/User");
 const cloudinary = require("../config/cloudinary");
-const generateToken = require("../utils/utils");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const generateToken = (userId) => {
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET);
+  return token;
+};
 
 async function registerUser(req, res) {
   const { fullName, email, password, bio } = req.body;
@@ -24,19 +30,19 @@ async function registerUser(req, res) {
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const userDetails = new UserModel({
+    const newUser = new UserModel({
       fullName,
       email,
       password: hashPassword,
       bio,
     });
 
-    await userDetails.save();
+    await newUser.save();
 
     const userToken = generateToken(newUser._id);
 
-    return res.status(201).json({
-      status: true,
+    res.status(201).json({
+      success: true,
       message: "User registered successfully",
       token: userToken,
       userDetails: {
@@ -47,7 +53,7 @@ async function registerUser(req, res) {
       },
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -63,7 +69,7 @@ async function login(req, res) {
 
     if (!isPasswordCorrect) {
       res.status(400).json({
-        status: false,
+        success: false,
         message: "Password dosent match!",
       });
     }
@@ -83,7 +89,7 @@ async function login(req, res) {
     });
   } catch (error) {
     res.status(500).json({
-      status: false,
+      success: false,
       message: error.message,
     });
   }
