@@ -11,8 +11,8 @@ export interface AuthContextType {
   axios: typeof axios;
   token: string | null;
   authUser: {
-    id: string;
-    name: string;
+    fullName: string;
+    bio: string;
     email: string;
   } | null;
   onlineUsers: any[];

@@ -11,6 +11,7 @@ function App() {
   return (
     <div className="bg-[url('./src/assets/bgImage.svg')] bg-cover bg-no-repeat bg-center min-h-screen">
       <Toaster />
+
       <Routes>
         <Route
           path="/"

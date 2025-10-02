@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import assets, { userDummyData } from "../assets/assets";
 import type { User } from "../types";
+import useAuth from "../../hooks/useAuth";
 
 const Sidebar = ({
   selectedUser,
@@ -10,6 +11,11 @@ const Sidebar = ({
   setSelectedUser: React.Dispatch<React.SetStateAction<User | null>>;
 }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <div
@@ -36,7 +42,9 @@ const Sidebar = ({
                 Edit Profile
               </p>
               <hr className="my-2 border-t border-gray-50-500" />
-              <p className="cursor-pointer text-sm">Logout</p>
+              <p onClick={handleLogout} className="cursor-pointer text-sm">
+                Logout
+              </p>
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [bio, setBio] = useState("");
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
 
-  const submitHandler = (event: FormEvent) => {
+  const submitHandler = async (event: FormEvent) => {
     event.preventDefault();
 
     if (currState === "Sign up" && !isDataSubmitted) {
@@ -19,7 +19,7 @@ const LoginPage = () => {
       return;
     }
 
-    login(currState === "Sign up" ? "signup" : "login", {
+    await login(currState === "Sign up" ? "signup" : "login", {
       fullName,
       email,
       password,

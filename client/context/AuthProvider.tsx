@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [authUser, setAuthUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // connect socket function to handle socket connection
 
@@ -42,6 +43,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   }
   // Login user
@@ -57,8 +60,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setToken(data.token);
         localStorage.setItem("token", data.token);
         toast.success(data.message);
-      } else {
-        toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
@@ -75,13 +76,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     toast.success("Logged out successfully");
     socket.disconnect();
+    setLoading(false);
   }
 
   //update user profile
 
   async function updateProfile(body: any) {
     try {
-      const { data } = await axios.put(`/api/auth/update-profile`, body);
+      const { data } = await axios.put(`/api/auth/update-profile`, body, {
+        headers:
+          body instanceof FormData
+            ? {}
+            : { "Content-Type": "application/json" },
+      });
 
       if (data.success) {
         setAuthUser(data.user);
@@ -95,9 +102,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common["token"] = token;
+      checkAuth();
+    } else {
+      setLoading(false);
     }
-
-    checkAuth();
   }, [token]);
 
   const value = {
@@ -112,5 +120,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     updateProfile,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? <div>Loading...</div> : children}
+    </AuthContext.Provider>
+  );
 };

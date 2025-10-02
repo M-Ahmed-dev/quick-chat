@@ -1,16 +1,30 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import assets from "../assets/assets";
+import useAuth from "../../hooks/useAuth";
 
 const ProfilePage = () => {
-  const [selectedImg, setSelectedImg] = useState(null);
+  const { authUser, updateProfile } = useAuth();
+  const [selectedImg, setSelectedImg] = useState(authUser?.profilePic);
   const navigate = useNavigate();
-  const [name, setName] = useState("Martin Johnson");
-  const [bio, setBio] = useState("Hi Everyone, I am using QuickChat!");
+  const [name, setName] = useState(authUser?.fullName);
+  const [bio, setBio] = useState(authUser?.bio);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    navigate("/");
+
+    if (!selectedImg) {
+      await updateProfile({ fullName: name, bio });
+      // navigate("/");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("profilePic", selectedImg);
+    formData.append("fullName", name);
+    formData.append("bio", bio);
+
+    await updateProfile(formData);
   };
 
   return (
@@ -28,16 +42,13 @@ const ProfilePage = () => {
             <input
               onChange={(e) => setSelectedImg(e.target.files[0])}
               type="file"
+              name="profilePic"
               id="avatar"
               accept=".png, .jpg, .jpeg"
               hidden
             />
             <img
-              src={
-                selectedImg
-                  ? URL.createObjectURL(selectedImg)
-                  : assets.avatar_icon
-              }
+              src={selectedImg || assets.avatar_icon}
               alt="img"
               className={`w-12 h-12 ${selectedImg && "rounded-full"}`}
             />
@@ -47,6 +58,7 @@ const ProfilePage = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             type="text"
+            name="fullName"
             className="p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
           <textarea
@@ -54,6 +66,7 @@ const ProfilePage = () => {
             className="p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
             placeholder="Write profile bio"
             value={bio}
+            name="bio"
           ></textarea>
 
           <button
@@ -65,7 +78,9 @@ const ProfilePage = () => {
         </form>
 
         <img
-          className="max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10"
+          className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 ${
+            selectedImg && "rounded-full"
+          }`}
           src={assets.logo_icon}
           alt=""
         />

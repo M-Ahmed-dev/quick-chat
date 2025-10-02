@@ -74,18 +74,12 @@ async function login(req, res) {
       });
     }
 
-    const userToken = generateToken(newUser._id);
+    const userToken = generateToken(userData._id);
 
     return res.status(201).json({
-      status: true,
-      message: "User registered successfully",
+      success: true,
+      message: "User logged in successfully",
       token: userToken,
-      userDetails: {
-        id: newUser._id,
-        fullName: newUser.fullName,
-        email: newUser.email,
-        bio: newUser.bio,
-      },
     });
   } catch (error) {
     res.status(500).json({
@@ -95,40 +89,58 @@ async function login(req, res) {
   }
 }
 
-// update user profile details
-
 async function updateProfile(req, res) {
-  const { profilePic, bio, fullName } = req.body;
+  const { bio, fullName } = req.body;
+
   try {
     const userId = req.user._id;
     let updatedUser;
 
-    if (!profilePic) {
-      await UserModel.findByIdAndUpdate(
-        userId,
-        { bio, fullName },
-        { new: true }
-      );
-    } else {
-      const upload = await cloudinary.uploader.upload(profilePic);
+    if (req.file) {
+      let result;
+
+      if (req.file.buffer) {
+        // memoryStorage
+        result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "profiles", resource_type: "image" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          stream.end(req.file.buffer);
+        });
+      } else if (req.file.path) {
+        // diskStorage
+        result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "profiles",
+          resource_type: "image",
+        });
+      }
+
+      console.log("Cloudinary upload result:", result);
 
       updatedUser = await UserModel.findByIdAndUpdate(
         userId,
-        {
-          profilePic: upload.secure_url,
-          bio,
-          fullName,
-        },
-        { new: true }
+        { profilePic: result.secure_url, bio, fullName },
+        { new: true, runValidators: true }
+      );
+    } else {
+      updatedUser = await UserModel.findByIdAndUpdate(
+        userId,
+        { bio, fullName },
+        { new: true, runValidators: true }
       );
     }
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       user: updatedUser,
     });
   } catch (error) {
-    console.log(error.message);
+    console.error("updateProfile error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 }
 

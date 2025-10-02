@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 
@@ -8,7 +9,6 @@ const http = require("http");
 const userRouter = require("./routes/userRoutes");
 const messageRouter = require("./routes/messageRoutes");
 const server = http.createServer(app);
-require("dotenv").config();
 
 const PORT = process.env.port || 5000;
 
