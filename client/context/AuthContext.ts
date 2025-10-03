@@ -8,6 +8,7 @@ interface AuthCredentials {
   bio: string;
 }
 export interface AuthContextType {
+  loading: boolean;
   axios: typeof axios;
   token: string | null;
   authUser: {

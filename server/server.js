@@ -6,8 +6,6 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const http = require("http");
-const userRouter = require("./routes/userRoutes");
-const messageRouter = require("./routes/messageRoutes");
 const server = http.createServer(app);
 
 const PORT = process.env.port || 5000;
@@ -20,6 +18,12 @@ const io = new Server(server, {
 });
 
 const userSocketMap = {};
+
+// Export early to avoid circular dependency issues
+module.exports = { io, userSocketMap };
+
+const userRouter = require("./routes/userRoutes");
+const messageRouter = require("./routes/messageRoutes");
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
@@ -52,5 +56,3 @@ app.use("/api/messages", messageRouter);
 server.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
-
-module.exports = { io, userSocketMap };

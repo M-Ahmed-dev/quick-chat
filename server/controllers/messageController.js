@@ -99,15 +99,26 @@ async function markMessageAsSeen(req, res) {
 
 async function sendMessage(req, res) {
   try {
-    const { text, image } = req.body;
+    const { text } = req.body;
     const receiverId = req.params.id;
     const senderId = req.user._id;
 
-    let imageUrl;
+    let imageUrl = null;
 
-    if (image) {
-      const uploadRes = await cloudinary.uploader.upload(image);
-      imageUrl = uploadRes.secure_url;
+    if (req.file && req.file.buffer) {
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "profiles", resource_type: "image" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+
+        stream.end(req.file.buffer);
+      });
+
+      imageUrl = result.secure_url;
     }
 
     const newMessage = await MessageModel.create({
@@ -124,7 +135,7 @@ async function sendMessage(req, res) {
 
     res.json({
       success: true,
-      message: newMessage,
+      newMessage: newMessage,
     });
   } catch (error) {
     res.json({

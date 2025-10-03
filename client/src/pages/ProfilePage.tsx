@@ -5,17 +5,18 @@ import useAuth from "../../hooks/useAuth";
 
 const ProfilePage = () => {
   const { authUser, updateProfile } = useAuth();
-  const [selectedImg, setSelectedImg] = useState(authUser?.profilePic);
   const navigate = useNavigate();
+  const [selectedImg, setSelectedImg] = useState(authUser?.profilePic);
   const [name, setName] = useState(authUser?.fullName);
   const [bio, setBio] = useState(authUser?.bio);
+  const [preview, setPreview] = useState(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!selectedImg) {
       await updateProfile({ fullName: name, bio });
-      // navigate("/");
+      navigate("/");
       return;
     }
 
@@ -24,7 +25,20 @@ const ProfilePage = () => {
     formData.append("fullName", name);
     formData.append("bio", bio);
 
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value, value instanceof File);
+    }
+
     await updateProfile(formData);
+    navigate("/");
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImg(file);
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   return (
@@ -40,7 +54,7 @@ const ProfilePage = () => {
             className="cursor-pointer flex items-center gap-3"
           >
             <input
-              onChange={(e) => setSelectedImg(e.target.files[0])}
+              onChange={handleImageChange}
               type="file"
               name="profilePic"
               id="avatar"
@@ -48,7 +62,7 @@ const ProfilePage = () => {
               hidden
             />
             <img
-              src={selectedImg || assets.avatar_icon}
+              src={assets.avatar_icon}
               alt="img"
               className={`w-12 h-12 ${selectedImg && "rounded-full"}`}
             />
@@ -81,7 +95,7 @@ const ProfilePage = () => {
           className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 ${
             selectedImg && "rounded-full"
           }`}
-          src={assets.logo_icon}
+          src={preview || selectedImg || assets.logo_icon}
           alt=""
         />
       </div>

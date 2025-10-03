@@ -100,7 +100,6 @@ async function updateProfile(req, res) {
       let result;
 
       if (req.file.buffer) {
-        // memoryStorage
         result = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: "profiles", resource_type: "image" },
@@ -110,12 +109,6 @@ async function updateProfile(req, res) {
             }
           );
           stream.end(req.file.buffer);
-        });
-      } else if (req.file.path) {
-        // diskStorage
-        result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "profiles",
-          resource_type: "image",
         });
       }
 

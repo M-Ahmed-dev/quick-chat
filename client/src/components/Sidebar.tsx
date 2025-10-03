@@ -2,16 +2,33 @@ import { useNavigate } from "react-router-dom";
 import assets, { userDummyData } from "../assets/assets";
 import type { User } from "../types";
 import useAuth from "../../hooks/useAuth";
+import useChat from "../../hooks/useChat";
+import { useEffect, useState } from "react";
 
-const Sidebar = ({
-  selectedUser,
-  setSelectedUser,
-}: {
-  selectedUser: User | null;
-  setSelectedUser: React.Dispatch<React.SetStateAction<User | null>>;
-}) => {
+const Sidebar = () => {
+  const {
+    getUsers,
+    users,
+    selectedUser,
+    setSelectedUser,
+    unSeenMessages,
+    setUnSeenMessages,
+  } = useChat();
+
+  const { logout, onlineUsers } = useAuth();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+
+  const [input, setInput] = useState("");
+
+  const filterUsers = input
+    ? users.filter((u) =>
+        u.fullName.toLowerCase().includes(input.toLowerCase())
+      )
+    : users;
+
+  useEffect(() => {
+    getUsers();
+  }, [onlineUsers]);
 
   const handleLogout = async () => {
     await logout();
@@ -53,6 +70,8 @@ const Sidebar = ({
         <div className="bg-[#282142] rounded-full flex items-center gap-2 py-3 px-4 mt-5">
           <img src={assets.search_icon} alt="search" className="w-3" />
           <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
             type="text"
             placeholder="Search User"
             className="bg-transparent border-none outline-none text-white text-xs placeholder-[#c8c8c8] flex-1"
@@ -62,7 +81,7 @@ const Sidebar = ({
       {/* Users */}
 
       <div className="flex flex-col">
-        {userDummyData.map((user: User, index: number) => (
+        {filterUsers?.map((user: User, index: number) => (
           <div
             onClick={() => {
               setSelectedUser(user);
@@ -79,15 +98,15 @@ const Sidebar = ({
             />
             <div className="flex flex-col leading-5">
               <p>{user.fullName}</p>
-              {index < 3 ? (
+              {onlineUsers.includes(user._id) ? (
                 <span className="text-green-400 text-xs">Online</span>
               ) : (
                 <span className="text-neutral-400 text-xs">OffLine</span>
               )}
             </div>
-            {index > 2 && (
+            {unSeenMessages[user._id] > 0 && (
               <p className="absolute top-4 right-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50">
-                {index}
+                {unSeenMessages[user._id]}
               </p>
             )}
           </div>

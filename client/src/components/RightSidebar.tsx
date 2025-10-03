@@ -48,7 +48,7 @@ const RightSidebar = ({
       </button>
     </div>
   ) : (
-    <div></div>
+    ""
   );
 };
 

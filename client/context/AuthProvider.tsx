@@ -10,9 +10,9 @@ axios.defaults.baseURL = backendUrl;
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [authUser, setAuthUser] = useState(null);
-  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [socket, setSocket] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // connect socket function to handle socket connection
 
@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
   }
-  // Login user
 
   async function login(state: string, credentials: any) {
     try {
@@ -114,15 +113,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     authUser,
     onlineUsers,
     socket,
+    loading,
 
     login,
     logout,
     updateProfile,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {loading ? <div>Loading...</div> : children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
